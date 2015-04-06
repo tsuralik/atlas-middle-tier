@@ -1,0 +1,72 @@
+echo "configuring..."
+
+read -p "Provide the desired zookeeper port: " zookPort
+echo "zookPort is $zookPort"
+
+read -p "Provide the number of solr shards: " solrShards
+echo "solrShards is $solrShards"
+
+read -p "Provide the number of solr devices: " solrDevices
+echo "solrDevices is $solrDevices"
+
+read -p "Provide the desired solr port: " solrPort
+echo "solrPort is $solrPort"
+
+#set path for file location
+fileDir=/home/vagrant/shared
+echo shared files are at $fileDir
+
+############## ZOOKEEPER ############## 
+
+echo copy the zoo_sample.cfg to zoo.cfg
+sudo cp /opt/shared/zookeeper-3.4.6/conf/zoo_sample.cfg /opt/shared/zookeeper-3.4.6/conf/zoo.cfg 
+
+echo replace zookeeper PORT with specified zookeeper port
+sudo sed -i "s/2181/$zookPort/g" /opt/shared/zookeeper-3.4.6/conf/zoo.cfg
+
+############## SOLR ############## 
+
+echo copy the startSolrCloud script to /var/solr/bin
+sudo cp $fileDir/solr-files/startSolrCloud.sh /var/solr/bin
+
+echo copy the stopSolrCloud script to /var/solr/bin
+sudo cp $fileDir/solr-files/stopSolrCloud.sh /var/solr/bin
+
+echo copy the ecfsStartLarge script to /var/solr/bin
+sudo cp $fileDir/solr-files/ecfsStartLarge.sh /var/solr/bin
+
+echo grant execute permissions to all files in /var/solr/bin
+sudo chmod +x /var/solr/bin/*
+
+echo copy solrconfig.xml to /var/solr/conf/ecfs_solrconfig.xml
+sudo cp $fileDir/solr-files/solrconfig.xml /var/solr/conf/ecfs_solrconfig.xml
+
+echo copy ecfs_schema_large.xml to /var/solr/conf/ecfs_schema_large.xml
+sudo cp $fileDir/solr-files/ecfs_schema_large.xml /var/solr/conf/ecfs_schema_large.xml
+
+echo replace ZK_HOST IP with system IP
+localip="$(ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')"
+echo local IP is: $localip
+sudo sed -i "s/127.0.0.1/$localip/g" /var/solr/bin/startSolrCloud.sh
+
+echo replace ZK_HOST PORT with specified zookeeper port
+sudo sed -i "s/2181/$zookPort/g" /var/solr/bin/startSolrCloud.sh
+
+echo replace NUM_OF_SHARDS with specified num of shards 
+sudo sed -i "s/NUM_OF_SHARDS/$solrShards/g" /var/solr/bin/ecfsStartLarge.sh
+
+echo replace NUM_OF_DEVICES with specified zookeeper port
+sudo sed -i "s/NUM_OF_DEVICES/$solrDevices/g" /var/solr/bin/ecfsStartLarge.sh
+
+echo replace SOLR_PORT with specified zookeeper port
+sudo sed -i "s/SOLR_PORT/$solrPort/g" /var/solr/bin/ecfsStartLarge.sh
+
+############## SCRIPTS ############## 
+
+echo replace ZOOKEEPER_IP with system IP
+sudo sed -i "s/ZOOKEEPER_IP/$localip/g" /opt/shared/dtl3/releases/ingest/runSolrIngest.sh
+
+echo replace ZK_HOST PORT with specified zookeeper port
+sudo sed -i "s/ZOOKEEPER_PORT/$zookPort/g" /opt/shared/dtl3/releases/ingest/runSolrIngest.sh
+
+echo "configuration complete"

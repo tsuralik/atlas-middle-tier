@@ -1,0 +1,1 @@
+java -Dlog4j.configurationFile=log4j2.properties.xml -jar solr-0.0.1-SNAPSHOT-jar-with-dependencies.jar ZOOKEEPER_IP ZOOKEEPER_PORT ECFS /home/vagrant/shared/releases/ingest/data-ECFS/tests/clean/001 true

@@ -1,0 +1,25 @@
+<dataConfig>
+ <dataSource name="myfilereader" type="FileDataSource"/>
+ <document>
+   <entity name="jc" rootEntity="false" dataSource="null"
+           processor="FileListEntityProcessor"
+           fileName="ecfs-blank-dih-data-file.xml" recursive="true"
+           baseDir="/var/solr/conf"
+           >
+     <entity name="x" rootEntity="true"
+             dataSource="myfilereader"
+             processor="XPathEntityProcessor"
+             url="${jc.fileAbsolutePath}"
+             stream="false"
+             forEach="/doc"
+             transformer="LogTransformer"
+             logTemplate="      processing ${jc.fileAbsolutePath}"
+             logLevel="trace"
+             >
+       <field column="id"              xpath="/doc/arr/[@name='id']/long"/>
+       <field column="applicant"       xpath="/doc/arr/[@name='applicant']/str"/>
+       <field column="city"            xpath="/doc/arr/[@name='city']/str"/>
+     </entity>
+   </entity>
+ </document>
+</dataConfig>
