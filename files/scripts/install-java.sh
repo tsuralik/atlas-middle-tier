@@ -1,8 +1,6 @@
 echo "installing java..."
 
-#set path for file location
-fileDir=/home/vagrant/shared
-echo shared files are at $fileDir
+source ./set-vars.sh
 
 echo install [JDK] via RPM
 sudo rpm -Uvh $fileDir/packages/jdk-7u67-linux-x64.rpm
