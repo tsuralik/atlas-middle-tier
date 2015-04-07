@@ -46,13 +46,10 @@ sudo mkdir -p /var/solr/bin
 echo copy the solr log4j.properties file to the solr/example/resources directory
 sudo cp $fileDir/solr-files/log4j.properties $targetDir/solr-4.10.4/example/resources
 
-echo copy the solr DIH clean file to solr/example directory
+echo copy the solr config file\, to be used to clean solr\, to the /var/solr/conf directory
 sudo cp $fileDir/solr-files/ecfs-clean-dih-config.xml /var/solr/conf
 
-echo copy the solr DIH clean file to solr/example directory
-sudo cp $fileDir/solr-files/ecfs-clean-dih-config.xml /var/solr/conf
-
-echo copy the solr DIH clean file to solr/example directory
+echo copy the empty solr data file to the /var/solr/conf directory
 sudo cp $fileDir/solr-files/ecfs-blank-dih-data-file.xml /var/solr/conf
 
 echo "solr installation complete"

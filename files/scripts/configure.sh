@@ -1,5 +1,7 @@
 echo "configuring..."
 
+source ./set-vars.sh
+
 read -p "Provide the desired zookeeper port: " zookPort
 echo "zookPort is $zookPort"
 
@@ -68,5 +70,19 @@ sudo sed -i "s/ZOOKEEPER_IP/$localip/g" /opt/shared/dtl3/releases/ingest/runSolr
 
 echo replace ZK_HOST PORT with specified zookeeper port
 sudo sed -i "s/ZOOKEEPER_PORT/$zookPort/g" /opt/shared/dtl3/releases/ingest/runSolrIngest.sh
+
+########## TOMCAT CONTEXT ########### 
+
+echo replace SOLR-IP-VARIABLE IP with system IP
+sudo sed -i "s/SOLR-IP-VARIABLE/$localip/g" $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost/fccEcfs.xml
+
+echo replace SOLR-PORT-VARIABLE IP with system IP
+sudo sed -i "s/SOLR-PORT-VARIABLE/$solrPort/g" $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost/fccEcfs.xml
+
+echo replace ZOOKEEPER-IP-VARIABLE IP with system IP
+sudo sed -i "s/ZOOKEEPER-IP-VARIABLE/$localip/g" $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost/fccEcfs.xml
+
+echo replace ZOOKEEPER-PORT-VARIABLE IP with system IP
+sudo sed -i "s/ZOOKEEPER-PORT-VARIABLE/$zookPort/g" $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost/fccEcfs.xml
 
 echo "configuration complete"

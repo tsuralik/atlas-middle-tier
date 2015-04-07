@@ -44,7 +44,11 @@ public class Select extends HttpServlet {
 //        System.err.println("servletPath  : " + request.getServletPath());
 //        System.err.println("parameterMap : " + request.getParameterMap());
         
-        URL url = new URL("http", "10.0.2.15", 9090, "/solr/ECFS/select");
+
+        String solrIP = request.getServletContext().getInitParameter("solr.IP");
+        int solrPort  = Integer.parseInt(request.getServletContext().getInitParameter("solr.port"));
+        
+        URL url = new URL("http", solrIP, solrPort, "/solr/ECFS/select");
         URLConnection conn = url.openConnection();
         conn.setDoOutput(true);
 

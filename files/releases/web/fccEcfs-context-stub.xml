@@ -1,0 +1,6 @@
+<Context>
+  <Parameter name="solr.IP" 		override="false"	value="SOLR-IP-VARIABLE"/>
+  <Parameter name="solr.port" 		override="false"	value="SOLR-PORT-VARIABLE"/>
+  <Parameter name="zookeeper.IP" 	override="false"	value="ZOOKEEPER-IP-VARIABLE"/>
+  <Parameter name="zookeeper.port" 	override="false"	value="ZOOKEEPER-PORT-VARIABLE"/>
+</Context>

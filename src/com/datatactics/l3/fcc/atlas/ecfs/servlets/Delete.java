@@ -38,8 +38,10 @@ public class Delete extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // TODO Auto-generated method stub
-        SolrProxy solr = new SolrProxy("10.0.2.15", 9181, "ECFS");
+        String zookeeperIP = request.getServletContext().getInitParameter("zookeeper.IP");
+        int zookeeperPort  = Integer.parseInt(request.getServletContext().getInitParameter("zookeeper.port"));
+        
+        SolrProxy solr = new SolrProxy(zookeeperIP, zookeeperPort, "ECFS");
         
         System.err.println("deleting id: [" + request.getParameter("id") + "]");
         
