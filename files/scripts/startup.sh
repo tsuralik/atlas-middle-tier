@@ -8,3 +8,5 @@ sudo nohup ./zkServer.sh start > /dev/null 2>&1 &
 
 cd /var/solr/bin
 sudo nohup ./ecfsStartLarge.sh > /dev/null 2>&1 &
+
+sudo service httpd start

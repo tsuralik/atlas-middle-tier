@@ -21,10 +21,10 @@ echo shared files are at $fileDir
 ############## ZOOKEEPER ############## 
 
 echo copy the zoo_sample.cfg to zoo.cfg
-sudo cp /opt/shared/zookeeper-3.4.6/conf/zoo_sample.cfg /opt/shared/zookeeper-3.4.6/conf/zoo.cfg 
+sudo cp $targetDir/zookeeper-3.4.6/conf/zoo_sample.cfg $targetDir/zookeeper-3.4.6/conf/zoo.cfg 
 
 echo replace zookeeper PORT with specified zookeeper port
-sudo sed -i "s/2181/$zookPort/g" /opt/shared/zookeeper-3.4.6/conf/zoo.cfg
+sudo sed -i "s/2181/$zookPort/g" $targetDir/zookeeper-3.4.6/conf/zoo.cfg
 
 ############## SOLR ############## 
 
@@ -66,10 +66,10 @@ sudo sed -i "s/SOLR_PORT/$solrPort/g" /var/solr/bin/ecfsStartLarge.sh
 ############## SCRIPTS ############## 
 
 echo replace ZOOKEEPER_IP with system IP
-sudo sed -i "s/ZOOKEEPER_IP/$localip/g" /opt/shared/dtl3/releases/ingest/runSolrIngest.sh
+sudo sed -i "s/ZOOKEEPER_IP/$localip/g" $targetDir/dtl3/releases/ingest/runSolrIngest.sh
 
 echo replace ZK_HOST PORT with specified zookeeper port
-sudo sed -i "s/ZOOKEEPER_PORT/$zookPort/g" /opt/shared/dtl3/releases/ingest/runSolrIngest.sh
+sudo sed -i "s/ZOOKEEPER_PORT/$zookPort/g" $targetDir/dtl3/releases/ingest/runSolrIngest.sh
 
 ########## TOMCAT CONTEXT ########### 
 
