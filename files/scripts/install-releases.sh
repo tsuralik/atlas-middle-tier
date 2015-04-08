@@ -18,7 +18,7 @@ sudo cp -R $fileDir/releases/ingest $targetDir/dtl3/releases
 sudo cp -R $fileDir/releases/web/fccEcfs.war $targetDir/apache-tomcat-8.0.20/webapps
 
 echo copy the servlet context stub to the servlet\'s configuration directory
-mkdir -p $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost
+sudo mkdir -p $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost
 sudo cp $fileDir/releases/web/fccEcfs-context-stub.xml $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost/fccEcfs.xml
 
 ############## WEB SITE ##############
