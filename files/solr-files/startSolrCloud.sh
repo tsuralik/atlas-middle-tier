@@ -17,7 +17,7 @@ export SCHEMA=$4;
 export JETTY_SERVER_COUNT=$5;
 export CONFIG=$6;
 
-export BASE="/opt/shared/solr-4.10.4"
+export BASE="TARGET_DIR/solr-4.10.4"
 export SOLR_HOME=${BASE}"/example";
 export SOLR_HOST="localhost";
 export CORE_PROPERTIES=${SOLR_HOME}"/cores";

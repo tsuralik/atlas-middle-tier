@@ -2,6 +2,8 @@ echo "configuring..."
 
 source ./set-vars.sh
 
+############### PROMPTS ############### 
+
 read -p "Provide the desired zookeeper port: " zookPort
 echo "zookPort is $zookPort"
 
@@ -18,6 +20,12 @@ echo "solrPort is $solrPort"
 fileDir=/home/vagrant/shared
 echo shared files are at $fileDir
 
+################ MYSQL ################ 
+
+sudo service mysqld start
+sudo sleep 3s
+sudo /usr/bin/mysqladmin -u root password 'fcc2014!' &
+
 ############## ZOOKEEPER ############## 
 
 echo copy the zoo_sample.cfg to zoo.cfg
@@ -26,7 +34,7 @@ sudo cp $targetDir/zookeeper-3.4.6/conf/zoo_sample.cfg $targetDir/zookeeper-3.4.
 echo replace zookeeper PORT with specified zookeeper port
 sudo sed -i "s/2181/$zookPort/g" $targetDir/zookeeper-3.4.6/conf/zoo.cfg
 
-############## SOLR ############## 
+################ SOLR ################# 
 
 echo copy the startSolrCloud script to /var/solr/bin
 sudo cp $fileDir/solr-files/startSolrCloud.sh /var/solr/bin
@@ -54,6 +62,11 @@ sudo sed -i "s/127.0.0.1/$localip/g" /var/solr/bin/startSolrCloud.sh
 echo replace ZK_HOST PORT with specified zookeeper port
 sudo sed -i "s/2181/$zookPort/g" /var/solr/bin/startSolrCloud.sh
 
+echo replace TARGET_DIR with specified solr install directory
+formattedTargetDir=`echo $targetDir | sed -e 's/\//\\\\\//g'`
+echo formattedTargetDir: $formattedTargetDir
+sudo sed -i "s/TARGET_DIR/$formattedTargetDir/g" /var/solr/bin/startSolrCloud.sh
+
 echo replace NUM_OF_SHARDS with specified num of shards 
 sudo sed -i "s/NUM_OF_SHARDS/$solrShards/g" /var/solr/bin/ecfsStartLarge.sh
 
@@ -63,7 +76,7 @@ sudo sed -i "s/NUM_OF_DEVICES/$solrDevices/g" /var/solr/bin/ecfsStartLarge.sh
 echo replace SOLR_PORT with specified zookeeper port
 sudo sed -i "s/SOLR_PORT/$solrPort/g" /var/solr/bin/ecfsStartLarge.sh
 
-############## SCRIPTS ############## 
+############### SCRIPTS ############### 
 
 echo replace ZOOKEEPER_IP with system IP
 sudo sed -i "s/ZOOKEEPER_IP/$localip/g" $targetDir/dtl3/releases/ingest/runSolrIngest.sh
@@ -71,7 +84,7 @@ sudo sed -i "s/ZOOKEEPER_IP/$localip/g" $targetDir/dtl3/releases/ingest/runSolrI
 echo replace ZK_HOST PORT with specified zookeeper port
 sudo sed -i "s/ZOOKEEPER_PORT/$zookPort/g" $targetDir/dtl3/releases/ingest/runSolrIngest.sh
 
-########## TOMCAT CONTEXT ########### 
+########### TOMCAT CONTEXT ############ 
 
 echo replace SOLR-IP-VARIABLE IP with system IP
 sudo sed -i "s/SOLR-IP-VARIABLE/$localip/g" $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost/fccEcfs.xml
