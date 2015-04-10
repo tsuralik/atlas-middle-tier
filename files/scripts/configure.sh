@@ -16,15 +16,17 @@ echo "solrDevices is $solrDevices"
 read -p "Provide the desired solr port: " solrPort
 echo "solrPort is $solrPort"
 
+read -p "Provide the mysql root password: " mysqlPassword
+echo "mysqlPassword is $mysqlPassword"
+
 #set path for file location
 fileDir=/home/vagrant/shared
 echo shared files are at $fileDir
 
 ################ MYSQL ################ 
 
-sudo service mysqld start
-sudo sleep 3s
-sudo /usr/bin/mysqladmin -u root password 'fcc2014!' &
+echo replace MYSQL_PASSWORD with the specified mysql password
+sudo sed -i "s/MYSQL_PASSWORD/$mysqlPassword/g" configure-mysql.sh
 
 ############## ZOOKEEPER ############## 
 
