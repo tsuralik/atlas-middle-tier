@@ -13,5 +13,6 @@ mysql -u root -p$mysqlPassword -e 'show databases;'
 mysql -u root -p$mysqlPassword -e 'create database ecfs;'
 mysql -u root -p$mysqlPassword -e 'show databases;'
 mysql -u root -p$mysqlPassword ecfs < ../mysql-files/ECFS-table-generation.sql
+mysql -u root -p$mysqlPassword ecfs < ../mysql-files/ECFS-atlas-addendum.sql
 mysql -u root -p$mysqlPassword -e 'show tables;' ecfs;
 
