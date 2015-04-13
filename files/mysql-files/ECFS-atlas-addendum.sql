@@ -152,6 +152,37 @@ END */;;
 DELIMITER ;
 
 
+/*!50003 DROP PROCEDURE IF EXISTS `insert_indexFields` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50020 DEFINER=`root`@`localhost`*/ /*!50003 PROCEDURE `insert_indexFields` (
+  IN applicant varchar(50),
+  IN city varchar(50),
+  IN proceeding varchar(50),
+  IN stateCd varchar(2),
+  IN text text character set utf8,
+  IN zip varchar(10)
+)
+BEGIN
+
+    INSERT INTO indexFields (applicant, applicant_sort, brief, city, dateRcpt, 
+        disseminated, exParte, modified, pages, proceeding, regFlexAnalysis, score, 
+        smallBusinessImpact, stateCd, submissionType, text, viewingStatus, zip)
+    VALUES (applicant, applicant, 0, city, '2011-01-11 01:11:01', 
+        '2011-01-11 01:11:01', 0, '2011-01-11 01:11:01', 2, proceeding, 0, 11.11, 
+        0, stateCd, 'COMMENTS', text, 'REVIEWED', zip);
+
+END */;;
+DELIMITER ;
+
+
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
