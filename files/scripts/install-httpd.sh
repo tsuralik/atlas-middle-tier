@@ -1,6 +1,6 @@
 echo "installing httpd..."
 
 echo install [httpd] via yum
-sudo yum install httpd
+sudo yum -y install httpd
 
 echo "httpd installation complete"
