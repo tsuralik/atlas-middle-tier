@@ -2,6 +2,7 @@ package com.datatactics.l3.fcc.atlas.ecfs.servlets;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.sql.CallableStatement;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,8 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.simple.JSONObject;
 
-import com.datatactics.l3.fcc.atlas.ecfs.DocumentFactory;
-import com.datatactics.l3.fcc.atlas.solr.SolrProxy;
+import com.datatactics.l3.fcc.atlas.mysql.Connector;
 
 /**
  * Servlet implementation class SubmitComment
@@ -48,50 +48,49 @@ public class SubmitComment extends HttpServlet {
         System.err.println("queryString  : " + request.getQueryString());
       
 
-        String zookeeperIP = request.getServletContext().getInitParameter("zookeeper.IP");
-        int zookeeperPort  = Integer.parseInt(request.getServletContext().getInitParameter("zookeeper.port"));
+        String user =       request.getServletContext().getInitParameter("mysql.user");
+        String password =   request.getServletContext().getInitParameter("mysql.password");
+        String server =     request.getServletContext().getInitParameter("mysql.server");
+        String port =       request.getServletContext().getInitParameter("mysql.port");
+        String database =   request.getServletContext().getInitParameter("mysql.database");
         
 
         String proceedingNumber   = getParameter(request, "proceedingNumber");
         String filer              = getParameter(request, "filer");
-        String email              = getParameter(request, "email");
-        String street             = getParameter(request, "street");
-        String street2            = getParameter(request, "street2");
+        //String email              = getParameter(request, "email");
+        //String street             = getParameter(request, "street");
+        //String street2            = getParameter(request, "street2");
         String city               = getParameter(request, "city");
         String state              = getParameter(request, "state");
         String zip                = getParameter(request, "zip");
         String zipExt             = getParameter(request, "zipExt");
         String comments           = getParameter(request, "comments");
+
+        System.err.println("parameter - zip     : [" + zip + "]");
+        System.err.println("parameter - zipExt  : [" + zipExt + "]");
         
+        if ((zipExt == null) || (zipExt.trim().equals(""))) {
+            zipExt = "0000";
+        }
+        System.err.println("variable - zipExt   : [" + zipExt + "]");
+        String zipCode = zip.concat("-").concat(zipExt);
+        System.err.println("variable - zipCode  : [" + zipCode + "]");
         
         Writer writer = response.getWriter();
         try {
-            SolrProxy solr = new SolrProxy(zookeeperIP, zookeeperPort, "ECFS");
-            DocumentFactory documentFactory = new DocumentFactory();
-            documentFactory.setApplicant(filer);
-            documentFactory.setApplicant_Sort(DEFAULT_VALUE);
-            documentFactory.setBrief(TRUE);
-            documentFactory.setCity(city);
-            //documentFactory.setDateRcpt(date);
-            //documentFactory.setDisseminated(date);
-            documentFactory.setExParte(FALSE);
-            documentFactory.setId("2");
-            //documentFactory.setModified(date);
-            documentFactory.setPages("1");
-            documentFactory.setProceeding(proceedingNumber);
-            documentFactory.setRegFlexAnalysis(FALSE);
-            documentFactory.setSmallBusinessImpact(FALSE);
-            documentFactory.setStateCd(state);
-            documentFactory.setSubmissionType("COMMENT");
-            documentFactory.setText(comments);
-            documentFactory.setViewingStatus("Unrestricted");
-            documentFactory.setZip(zip);
+            Connector mysql = new Connector(user, password, server, port, database);
+            CallableStatement proc = mysql.getConnection().prepareCall("{call insert_indexFields(?, ?, ?, ?, ?, ?)}");
+            proc.setString(1,  filer);
+            proc.setString(2,  city);
+            proc.setString(3,  proceedingNumber);
+            proc.setString(4,  state);
+            proc.setString(5,  comments);
+            proc.setString(6,  zipCode);
+            
+            proc.execute();
             
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("id", "3");
-
-            solr.instance().add(documentFactory.createSolrInputDocument());
-            solr.instance().commit();
+            jsonObject.put("id", "x");
             writer.write(jsonObject.toJSONString());
         } catch(Exception e) {
             String msg = e.getMessage();
