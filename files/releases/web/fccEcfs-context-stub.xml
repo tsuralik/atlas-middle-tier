@@ -1,6 +1,13 @@
 <Context>
-  <Parameter name="solr.IP" 		override="false"	value="SOLR-IP-VARIABLE"/>
-  <Parameter name="solr.port" 		override="false"	value="SOLR-PORT-VARIABLE"/>
-  <Parameter name="zookeeper.IP" 	override="false"	value="ZOOKEEPER-IP-VARIABLE"/>
-  <Parameter name="zookeeper.port" 	override="false"	value="ZOOKEEPER-PORT-VARIABLE"/>
+  <Parameter name="solr.IP"         override="false"    value="SOLR-IP-VARIABLE"/>
+  <Parameter name="solr.port"       override="false"    value="SOLR-PORT-VARIABLE"/>
+  <Parameter name="zookeeper.IP"    override="false"    value="ZOOKEEPER-IP-VARIABLE"/>
+  <Parameter name="zookeeper.port"  override="false"    value="ZOOKEEPER-PORT-VARIABLE"/>
+
+  <Parameter name="mysql.user"      override="false"    value="MYSQL_USER_VARIABLE"/>
+  <Parameter name="mysql.password"  override="false"    value="MYSQL_PASSWORD_VARIABLE"/>
+  <Parameter name="mysql.server"    override="false"    value="MYSQL_IP_VARIABLE"/>
+  <Parameter name="mysql.port"      override="false"    value="MYSQL_PORT_VARIABLE"/>
+  <Parameter name="mysql.database"  override="false"    value="ecfs"/>
+  
 </Context>

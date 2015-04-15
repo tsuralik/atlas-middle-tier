@@ -2,6 +2,9 @@ echo "configuring..."
 
 source ./set-vars.sh
 
+localip="$(ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')"
+echo local IP is: $localip
+
 ############### PROMPTS ############### 
 
 read -p "Provide the desired zookeeper port: " zookPort
@@ -16,6 +19,9 @@ echo "solrDevices is $solrDevices"
 read -p "Provide the desired solr port: " solrPort
 echo "solrPort is $solrPort"
 
+read -p "Provide the desired mysql server port: " mySQLPort
+echo "mySQLPort is $mySQLPort"
+
 read -p "Provide the mysql root password: " mysqlPassword
 echo "mysqlPassword is $mysqlPassword"
 
@@ -26,7 +32,7 @@ echo shared files are at $fileDir
 ################ MYSQL ################ 
 
 echo replace MYSQL_PASSWORD with the specified mysql password
-sudo sed -i "s/MYSQL_PASSWORD/$mysqlPassword/g" configure-mysql.sh
+sudo sed -i "s/MYSQL_PASSWD/$mysqlPassword/g" configure-mysql.sh
 
 ############## ZOOKEEPER ############## 
 
@@ -57,8 +63,6 @@ echo copy ecfs_schema_large.xml to /var/solr/conf/ecfs_schema_large.xml
 sudo cp $fileDir/solr-files/ecfs_schema_large.xml /var/solr/conf/ecfs_schema_large.xml
 
 echo replace ZK_HOST IP with system IP
-localip="$(ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}')"
-echo local IP is: $localip
 sudo sed -i "s/127.0.0.1/$localip/g" /var/solr/bin/startSolrCloud.sh
 
 echo replace ZK_HOST PORT with specified zookeeper port
@@ -99,5 +103,11 @@ sudo sed -i "s/ZOOKEEPER-IP-VARIABLE/$localip/g" $targetDir/apache-tomcat-8.0.20
 
 echo replace ZOOKEEPER-PORT-VARIABLE IP with system IP
 sudo sed -i "s/ZOOKEEPER-PORT-VARIABLE/$zookPort/g" $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost/fccEcfs.xml
+
+echo replace MYSQL_IP_VARIABLE IP with system IP
+sudo sed -i "s/MYSQL_IP_VARIABLE/127.0.0.1/g" $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost/fccEcfs.xml
+
+echo replace MYSQL_PORT_VARIABLE IP with system IP
+sudo sed -i "s/MYSQL_PORT_VARIABLE/$mySQLPort/g" $targetDir/apache-tomcat-8.0.20/conf/Catalina/localhost/fccEcfs.xml
 
 echo "configuration complete"
