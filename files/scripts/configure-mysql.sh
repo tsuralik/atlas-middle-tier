@@ -9,6 +9,7 @@ mysqlPassword=MYSQL_PASSWD
 echo configure mysql root password
 sudo /usr/bin/mysqladmin -u root password $mysqlPassword &
 
+sleep 5
 mysql -u root -p$mysqlPassword -e 'show databases;'
 mysql -u root -p$mysqlPassword -e 'create database ecfs;'
 sleep 2
