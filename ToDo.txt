@@ -1,0 +1,10 @@
+- use storedProcedure call to insert data elements into indexFields table
+- create trigger to push inserted rows from indexFields table into indexFields_for_solr table with a timestamp
+- create cron job to run program that will:
+    - get greatest timestamp of items in indexFields_for_solr table
+    - push all rows from indexFields_for_solr that have that timestamp or earlier
+    - delete all rows from indexFields_for_solr that have that timestamp or earlier
+- create scripts to invoke the cron job
+- update distribution package to provide cron job script
+- update distribution package to configure cron job script
+- update startup script to launch cron job

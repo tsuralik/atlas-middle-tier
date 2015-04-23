@@ -2,7 +2,6 @@ package com.datatactics.l3.fcc.atlas.ecfs;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 import org.apache.solr.common.SolrInputDocument;
 
@@ -38,7 +37,7 @@ public class DocumentFactory {
         disseminated        = now;
         exParte             = "_";
         modified            = now;
-        pages               = "_";
+        pages               = "0";
         proceeding          = "_";
         regFlexAnalysis     = "_";
         smallBusinessImpact = "_";
