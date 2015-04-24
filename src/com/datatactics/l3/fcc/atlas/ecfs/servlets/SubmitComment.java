@@ -127,8 +127,8 @@ public class SubmitComment extends HttpServlet {
     protected boolean sendCommentSubmissionToSolr(HttpServletRequest request, SubmissionData submissionData) throws EcfsException {
         boolean retVal = false;
         
-        String zookeeperIPStr   = request.getServletContext().getInitParameter("zookeeper.IP");
-        String zookeeperPortStr = request.getServletContext().getInitParameter("zookeeper.port");
+        String zookeeperIPStr   = "192.255.32.218"; //request.getServletContext().getInitParameter("zookeeper.IP");
+        String zookeeperPortStr = "2181"; //request.getServletContext().getInitParameter("zookeeper.port");
         String collectionName   = "ECFS";
         
         // if all of the parameters have data
