@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.json.simple.JSONObject;
 
@@ -18,12 +20,14 @@ import com.datatactics.l3.fcc.atlas.ecfs.DocumentFactory;
 import com.datatactics.l3.fcc.atlas.ecfs.EcfsException;
 import com.datatactics.l3.fcc.atlas.mysql.Connector;
 import com.datatactics.l3.fcc.atlas.solr.SolrProxy;
+import com.datatactics.l3.fcc.utils.FccConstants;
 
 /**
  * Servlet implementation class SubmitComment
  */
 @WebServlet("/SubmitComment")
 public class SubmitComment extends HttpServlet {
+    private static final Logger log = LogManager.getLogger(SubmitComment.class);
     
     /**
      * Auto-generated serial version UID
@@ -84,11 +88,11 @@ public class SubmitComment extends HttpServlet {
     protected boolean sendCommentSubmissionToMySQL(HttpServletRequest request, SubmissionData submissionData) throws EcfsException {
         boolean retVal = false;
         
-        String user =       request.getServletContext().getInitParameter("mysql.user");
-        String password =   request.getServletContext().getInitParameter("mysql.password");
-        String server =     request.getServletContext().getInitParameter("mysql.server");
-        String port =       request.getServletContext().getInitParameter("mysql.port");
-        String database =   request.getServletContext().getInitParameter("mysql.database");
+        String user =       request.getServletContext().getInitParameter(FccConstants.MYSQL_USER);
+        String password =   request.getServletContext().getInitParameter(FccConstants.MYSQL_PASSWORD);
+        String server =     request.getServletContext().getInitParameter(FccConstants.MYSQL_SERVER);
+        String port =       request.getServletContext().getInitParameter(FccConstants.MYSQL_PORT);
+        String database =   request.getServletContext().getInitParameter(FccConstants.MYSQL_DATABASE);
         
         Connector mysql;
         try {
@@ -198,8 +202,9 @@ public class SubmitComment extends HttpServlet {
     }
     
     protected void processCommentSubmission(HttpServletRequest request, HttpServletResponse response) {
-        System.err.println("requestURL   : " + request.getRequestURL());
-        System.err.println("queryString  : " + request.getQueryString());
+        System.err.println("submit version : " + "?");
+        System.err.println("requestURL     : " + request.getRequestURL());
+        System.err.println("queryString    : " + request.getQueryString());
         
         SubmissionData submissionData = null;
         boolean submissionSuccess = false;
