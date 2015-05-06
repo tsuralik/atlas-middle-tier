@@ -85,8 +85,8 @@ public class SubmitComment extends HttpServlet {
      * @return <code>true</code> if the insertion succeeded properly, <code>false</code> false otherwise
      * @throws EcfsException
      */
-    protected boolean sendCommentSubmissionToMySQL(HttpServletRequest request, SubmissionData submissionData) throws EcfsException {
-        boolean retVal = false;
+    protected SubmissionResult sendCommentSubmissionToMySQL(HttpServletRequest request, SubmissionData submissionData) throws EcfsException {
+        SubmissionResult submissionResult = new SubmissionResult();
         
         String user =       request.getServletContext().getInitParameter(FccConstants.MYSQL_USER);
         String password =   request.getServletContext().getInitParameter(FccConstants.MYSQL_PASSWORD);
@@ -110,12 +110,12 @@ public class SubmitComment extends HttpServlet {
             proc.execute();
             
             // set the return value to true if we have gotten to this point without an exception
-            retVal = true;
+            submissionResult.success = true;
         } catch (SQLException e) {
             throw new EcfsException("could not execute stored procedure to insert rows into indexFields");
         }
         
-        return retVal;
+        return submissionResult;
     }
 
     /** 
@@ -128,11 +128,11 @@ public class SubmitComment extends HttpServlet {
      * @return <code>true</code> if the insertion succeeded properly, <code>false</code> false otherwise
      * @throws EcfsException
      */
-    protected boolean sendCommentSubmissionToSolr(HttpServletRequest request, SubmissionData submissionData) throws EcfsException {
-        boolean retVal = false;
+    protected SubmissionResult sendCommentSubmissionToSolr(HttpServletRequest request, SubmissionData submissionData) throws EcfsException {
+        SubmissionResult submissionResult = new SubmissionResult();
         
-        String zookeeperIPStr   = "192.255.32.218"; //request.getServletContext().getInitParameter("zookeeper.IP");
-        String zookeeperPortStr = "2181"; //request.getServletContext().getInitParameter("zookeeper.port");
+        String zookeeperIPStr   = request.getServletContext().getInitParameter("zookeeper.IP");
+        String zookeeperPortStr = request.getServletContext().getInitParameter("zookeeper.port");
         String collectionName   = "ECFS";
         
         // if all of the parameters have data
@@ -146,7 +146,6 @@ public class SubmitComment extends HttpServlet {
                 
                 // use the factory to configure a SolrInputDocument
                 DocumentFactory solrDocFactory = new DocumentFactory();
-                solrDocFactory.setId("1");
                 solrDocFactory.setApplicant(submissionData.filer);
                 solrDocFactory.setCity(submissionData.city);
                 solrDocFactory.setProceeding(submissionData.proceedingNumber);
@@ -154,11 +153,14 @@ public class SubmitComment extends HttpServlet {
                 solrDocFactory.setText(submissionData.comments);
                 solrDocFactory.setZip(submissionData.getZipCode());
                 
+                System.out.println("sending comment to solr:\n" + solrDocFactory.toString());
+                
                 // stage the document for commit to solr
                 solrProxy.instance().add(solrDocFactory.createSolrInputDocument());
                 
                 // commit the document and set the return value to the success of the operation
-                retVal = solrProxy.commit();
+                submissionResult.success = solrProxy.commit();
+                submissionResult.id = solrDocFactory.getId();
             } catch (NumberFormatException nfe) {
                 System.err.println("could not format [" + zookeeperPortStr + "] to an integer");
             } catch (SolrServerException e) {
@@ -168,7 +170,7 @@ public class SubmitComment extends HttpServlet {
             } 
         }
         
-        return retVal;
+        return submissionResult;
     }
 
     /**
@@ -179,13 +181,14 @@ public class SubmitComment extends HttpServlet {
      * @throws EcfsException 
      */
     @SuppressWarnings("unchecked")
-    private void writeResults(HttpServletResponse response, boolean success) throws EcfsException {
+    private void writeResults(HttpServletResponse response, SubmissionResult submissionResult) throws EcfsException {
         JSONObject jsonObject = new JSONObject();
 
         Writer writer = null;
         try {
             writer = response.getWriter();
-            jsonObject.put("results", success);
+            jsonObject.put("success", Boolean.toString(submissionResult.success));
+            jsonObject.put("id", submissionResult.id);
             writer.write(jsonObject.toJSONString());
         } catch (IOException ioe) {
             System.err.println("could not write response [" + jsonObject.toJSONString() + "]");
@@ -207,22 +210,22 @@ public class SubmitComment extends HttpServlet {
         System.err.println("queryString    : " + request.getQueryString());
         
         SubmissionData submissionData = null;
-        boolean submissionSuccess = false;
+        SubmissionResult submissionResult = null;
         try {
             submissionData = new SubmissionData(request);
 
             if (submissionData.isValid()) {
                 //submissionSuccess = sendCommentSubmissionToMySQL(request, submissionData);
-                submissionSuccess = sendCommentSubmissionToSolr(request, submissionData);
+                submissionResult = sendCommentSubmissionToSolr(request, submissionData);
             }
         } catch (EcfsException ee) {
-            submissionSuccess = false;
+            submissionResult.success = false;
         }
 
         try {
-            writeResults(response, submissionSuccess);
+            writeResults(response, submissionResult);
         } catch (EcfsException e) {
-            System.err.println("could not write response back to client: [" + submissionSuccess + "]");
+            System.err.println("could not write response back to client: [" + submissionResult.success + "]");
         }
     }
 
@@ -298,4 +301,8 @@ public class SubmitComment extends HttpServlet {
         }
     }
 
+    private class SubmissionResult {
+        private boolean success = false;
+        private String id = "N/A";
+    }
 }
