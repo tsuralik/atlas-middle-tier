@@ -6,6 +6,8 @@ import java.util.Calendar;
 import org.apache.solr.common.SolrInputDocument;
 
 public class DocumentFactory {
+    
+    private static long idCounter = 0;
 
     private String id;
     private String applicant;
@@ -29,6 +31,9 @@ public class DocumentFactory {
     
     public DocumentFactory() {
         String now = formatNow();
+        
+        id = Long.toString(++idCounter);
+        
         applicant           = "_";
         applicant_sort      = "_";
         brief               = "_";
@@ -52,6 +57,10 @@ public class DocumentFactory {
     private String formatNow() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"); 
         return dateFormat.format(Calendar.getInstance().getTime());
+    }
+    
+    public String getId() {
+        return this.id;
     }
     
     public void setId(String id) {
@@ -152,5 +161,34 @@ public class DocumentFactory {
         document.addField("deleted", false);
         
         return document;
+    }
+    
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(getClass().getName());
+        builder.append("@");
+        builder.append(hashCode());
+        builder.append(":");
+        builder.append(String.format("\n\t%1$40s %2$s", "id", id));
+        builder.append(String.format("\n\t%1$40s %2$s", "applicant", applicant));
+        builder.append(String.format("\n\t%1$40s %2$s", "applicant_sort", applicant_sort));
+        builder.append(String.format("\n\t%1$40s %2$s", "brief", brief));
+        builder.append(String.format("\n\t%1$40s %2$s", "city", city));
+        builder.append(String.format("\n\t%1$40s %2$s", "dateRcpt", dateRcpt));
+        builder.append(String.format("\n\t%1$40s %2$s", "disseminated", disseminated));
+        builder.append(String.format("\n\t%1$40s %2$s", "exParte", exParte));
+        builder.append(String.format("\n\t%1$40s %2$s", "modified", modified));
+        builder.append(String.format("\n\t%1$40s %2$s", "pages", pages));
+        builder.append(String.format("\n\t%1$40s %2$s", "proceeding", proceeding));
+        builder.append(String.format("\n\t%1$40s %2$s", "regFlexAnalysis", regFlexAnalysis));
+        builder.append(String.format("\n\t%1$40s %2$s", "smallBusinessImpact", smallBusinessImpact));
+        builder.append(String.format("\n\t%1$40s %2$s", "stateCd", stateCd));
+        builder.append(String.format("\n\t%1$40s %2$s", "submissionType", submissionType));
+        builder.append(String.format("\n\t%1$40s %2$s", "viewingStatus", viewingStatus));
+        builder.append(String.format("\n\t%1$40s %2$s", "zip", zip));
+        builder.append(String.format("\n\t%1$40s %2$s", "deleted", false));
+        builder.append(String.format("\n\t%1$40s %2$s", "text", text));
+        
+        return builder.toString();
     }
 }
