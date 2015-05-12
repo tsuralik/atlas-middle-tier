@@ -2,9 +2,9 @@ package com.datatactics.l3.fcc.utils;
 
 public interface FccConstants {
 
-    public final String SOLR_HOST          = "solr.ip";
+    public final String SOLR_HOST          = "solr.IP";
     public final String SOLR_PORT          = "solr.port";
-    public final String ZOOKEEPER_HOST     = "zookeeper.ip";
+    public final String ZOOKEEPER_HOST     = "zookeeper.IP";
     public final String ZOOKEEPER_PORT     = "zookeeper.port";
 
     public final String MYSQL_USER          = "mysql.user";

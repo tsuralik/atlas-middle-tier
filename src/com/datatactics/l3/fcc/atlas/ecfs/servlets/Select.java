@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -19,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.datatactics.l3.fcc.atlas.ecfs.EcfsException;
+import com.datatactics.l3.fcc.utils.FccConstants;
 import com.datatactics.l3.fcc.utils.LogFormatter;
 
 /**
@@ -49,27 +52,45 @@ public class Select extends HttpServlet {
 //      System.err.println("servletPath  : " + request.getServletPath());
 //      System.err.println("parameterMap : " + request.getParameterMap());
     }
-    
-    private String getSolrHostProperty(HttpServletRequest request) {
-        return "192.255.32.218"; 
-        //return request.getServletContext().getInitParameter(FccConstants.SOLR_HOST);
+
+    private String getSolrHost(HttpServletRequest request) {
+        return request.getServletContext().getInitParameter(FccConstants.SOLR_HOST);
     }
     
-    private int getSolrPortProperty(HttpServletRequest request) {
-        return 8500; 
-        /*
-        int port = -1;
-        String portStr = request.getServletContext().getInitParameter(FccConstants.SOLR_PORT);
-        if (hasData(portStr)) {
+    private int getSolrPort(HttpServletRequest request) throws EcfsException {
+        int solrPort = -1;
+
+        String solrPortStr = request.getServletContext().getInitParameter(FccConstants.SOLR_PORT);
+        if (hasData(solrPortStr)) {
             try {
-                port = Integer.parseInt(portStr);
-            } catch(NumberFormatException nfe) {
-                String msg = "Could not cast solr port property to a number";
-                log.warn(LogFormatter.formatException(msg, null, nfe);
+                solrPort = Integer.parseInt(solrPortStr);
+            } catch(Exception e) {
+                throw new EcfsException("could not cast solr port [" + solrPortStr + "] to integer");
             }
         }
-        return port;
-        */
+        return solrPort;
+    }
+    
+    /**
+     * Get the specified parameter from the <code>HttpServletRequest</code>.
+     * 
+     * @param request the servlet request instance
+     * @param parameterName the name of the parameter to retrieve
+     * @return
+     */
+    protected String getParameter(HttpServletRequest request, String parameterName) {
+
+        // get the parameter value from the request
+        String retVal = request.getParameter(parameterName);
+        
+        // if the parameter did not exist, set the default value
+        if (!hasData(retVal)) {
+            retVal = null;
+        }
+        
+        System.out.println("parameter: " + parameterName + " : [" + retVal + "]");
+        
+        return retVal;
     }
     
     /** 
@@ -82,15 +103,48 @@ public class Select extends HttpServlet {
         return (variable != null && !variable.trim().isEmpty());
     }
     
+    private String appendFQ(String parameterName, String parameterValue) {
+        StringBuilder builder = new StringBuilder();
+        
+        if (hasData(parameterValue)) { 
+            builder.append("fq=");
+            builder.append(parameterName);
+            builder.append("%3A");
+            builder.append(parameterValue);
+        }
+        
+        System.out.println(String.format("append FQ: %1$s: [%2$s]", parameterName, builder.toString()));
+        
+        return builder.toString();
+    }
+    
+    private String convertQueryString(String queryString, SelectionData selectionData) { 
+        StringBuilder builder = new StringBuilder();
+        builder.append(appendFQ("proceeding",       selectionData.proceeding));
+        builder.append(appendFQ("text",             selectionData.text));
+        builder.append(appendFQ("submissionType",   selectionData.submissionType));
+        builder.append(appendFQ("applicant",        selectionData.applicant));
+        builder.append(appendFQ("city",             selectionData.city));
+        builder.append(appendFQ("stateCd",          selectionData.stateCd));
+        builder.append(appendFQ("zip",              selectionData.zip));
+        builder.append(appendFQ("brief",            selectionData.brief));
+        builder.append(appendFQ("exParte",          selectionData.exParte));
+        builder.append("&");
+        builder.append("q=*%3A*&wt=json&indent=true");
+        
+        return builder.toString();
+    }
+    
     private URLConnection createConnectionToSolr(HttpServletRequest request) throws EcfsException {
-        String solrHost = getSolrHostProperty(request);
-        int solrPort  = getSolrPortProperty(request);
+        String solrHost = getSolrHost(request);
+        int solrPort  = getSolrPort(request);
 
         URLConnection conn = null;
         if (hasData(solrHost) && (solrPort > 0)) {
             try {
                 URL url = new URL(HTTP, solrHost, solrPort, SOLR_SELECT_SERVLET);
                 conn = url.openConnection();
+                System.err.println("solr URL: " + conn.getURL());
                 conn.setDoOutput(true);
             } catch (NullPointerException | IOException ex) {
                 String msg = "could not create URLConnection";
@@ -98,18 +152,27 @@ public class Select extends HttpServlet {
                 throw new EcfsException(msg, ex);
             }
         }
+        else {
+            System.out.println("insufficient data");
+            System.out.println("solrHost: " + solrHost);
+            System.out.println("solrPort: " + solrPort);
+        }
         
         return conn;
     }
     
-    private void forwardTheRequestToSolr(URLConnection conn, String queryString) throws EcfsException {
+    private void forwardTheRequestToSolr(URLConnection conn, SelectionData selectionData) throws EcfsException {
         OutputStreamWriter writer = null;
         
         try {
+            String convertedQuery = convertQueryString(selectionData.getQueryString(), selectionData);
+            
+            System.out.println("converted query: " + convertedQuery);
+            
             OutputStream os = conn.getOutputStream();
-
             writer = new OutputStreamWriter(os);
-            writer.write(queryString); 
+            writer.write(convertedQuery);
+//            writer.write(selectionData.getQueryString()); 
             writer.flush();
         } catch(NullPointerException | IOException ex) {
             String msg = "could not forward the request to solr";
@@ -128,16 +191,26 @@ public class Select extends HttpServlet {
         }
     }
     
-    private void reportResultsBackToClient(URLConnection conn, HttpServletResponse response) throws EcfsException {
+    private void reportResultsBackToClient(URLConnection conn, HttpServletResponse response, SelectionData selectionData) throws EcfsException {
         String line;
         BufferedReader reader = null;
+        PrintWriter responseWriter = null;
         try {
             InputStream is = conn.getInputStream();
             InputStreamReader isr = new InputStreamReader(is);
             reader = new BufferedReader(isr);
+            
+            responseWriter = response.getWriter();
+            responseWriter.write(selectionData.getJsonWrf());
+            
+            // write json object return from solr
+            responseWriter.append("(");
             while ((line = reader.readLine()) != null) {
-                response.getWriter().println(line);
+                responseWriter.println(line);
             }
+            
+            responseWriter.append(")");
+
         } catch(Exception ex) {
             String msg = "could not write the results back to the client";
             //log.warn(LogFormatter.formatException(msg, null, ex));
@@ -155,15 +228,17 @@ public class Select extends HttpServlet {
     }
     
     private void processSelectRequest(HttpServletRequest request, HttpServletResponse response) {
-        System.err.println("select version : " + "?");
+        System.err.println("select version : " + "8");
         
         logRequestProperties(request);
         
         URLConnection conn = null;
+        SelectionData selectionData = null;
         try {
+            selectionData = new SelectionData(request);
             conn = createConnectionToSolr(request);
-            forwardTheRequestToSolr(conn, request.getQueryString());
-            reportResultsBackToClient(conn, response);
+            forwardTheRequestToSolr(conn, selectionData);
+            reportResultsBackToClient(conn, response, selectionData);
         } catch (EcfsException ee) {
             String msg = "could not process selection request";
             log.warn(LogFormatter.formatException(msg, null, ee));
@@ -182,6 +257,61 @@ public class Select extends HttpServlet {
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         processSelectRequest(request, response);
+    }
+
+    
+    private class SelectionData {   
+        String queryString      = null;
+        String jsonWrf          = null;
+        String proceeding       = null;
+        String text             = null;
+        String submissionType   = null;
+        String applicant        = null;
+        String city             = null;
+        String stateCd          = null;
+        String zip              = null;
+        String brief            = null;
+        String exParte          = null;
+        
+        private SelectionData(HttpServletRequest request) throws EcfsException {
+            
+            queryString     = request.getQueryString();
+            jsonWrf         = getParameter(request, "json.wrf");
+            proceeding      = getParameter(request, "proceeding");
+            text            = getParameter(request, "text");
+            submissionType  = getParameter(request, "submissionType");
+            applicant       = getParameter(request, "applicant");
+            city            = getParameter(request, "city");
+            stateCd         = getParameter(request, "stateCd");
+            zip             = getParameter(request, "zip");
+            brief           = getParameter(request, "brief");
+            exParte         = getParameter(request, "exParte");
+            
+            if (isInvalid()) {
+                throw new EcfsException("insufficient parameter details");
+            }
+        }
+        
+        private String getQueryString() {
+            return queryString;
+        }
+        
+        private String getJsonWrf() {
+            return jsonWrf;
+        }
+        
+        private boolean isInvalid() {
+            return !isValid();
+        }
+
+        private boolean isValid() {
+            return hasData(queryString) &&
+                   hasData(jsonWrf);
+        }
+    }
+
+    private class SubmissionResult {
+        private boolean success = false;
     }
 
 }

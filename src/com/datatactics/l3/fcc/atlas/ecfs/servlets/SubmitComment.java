@@ -181,7 +181,7 @@ public class SubmitComment extends HttpServlet {
      * @throws EcfsException 
      */
     @SuppressWarnings("unchecked")
-    private void writeResults(HttpServletResponse response, SubmissionResult submissionResult) throws EcfsException {
+    private void writeResults(HttpServletResponse response, SubmissionResult submissionResult, SubmissionData submissionData) throws EcfsException {
         JSONObject jsonObject = new JSONObject();
 
         Writer writer = null;
@@ -189,7 +189,13 @@ public class SubmitComment extends HttpServlet {
             writer = response.getWriter();
             jsonObject.put("success", Boolean.toString(submissionResult.success));
             jsonObject.put("id", submissionResult.id);
-            writer.write(jsonObject.toJSONString());
+            StringBuilder resultsToWrite = new StringBuilder();
+            resultsToWrite.append(submissionData.jsonWrf);
+            //resultsToWrite.append(submissionResult.id);
+            resultsToWrite.append("(");
+            resultsToWrite.append(jsonObject.toJSONString());
+            resultsToWrite.append(")");
+            writer.write(resultsToWrite.toString());
         } catch (IOException ioe) {
             System.err.println("could not write response [" + jsonObject.toJSONString() + "]");
             throw new EcfsException("could not write response", ioe);
@@ -223,7 +229,7 @@ public class SubmitComment extends HttpServlet {
         }
 
         try {
-            writeResults(response, submissionResult);
+            writeResults(response, submissionResult, submissionData);
         } catch (EcfsException e) {
             System.err.println("could not write response back to client: [" + submissionResult.success + "]");
         }
@@ -255,8 +261,10 @@ public class SubmitComment extends HttpServlet {
         String zipExt             = null;
         String comments           = null;
 
+        String jsonWrf = null;
         
         private SubmissionData(HttpServletRequest request) throws EcfsException {
+            
             proceedingNumber   = getParameter(request, "proceedingNumber");
             filer              = getParameter(request, "filer");
             //email              = getParameter(request, "email");
@@ -267,6 +275,7 @@ public class SubmitComment extends HttpServlet {
             zip                = getParameter(request, "zip");
             zipExt             = getParameter(request, "zipExt");
             comments           = getParameter(request, "comments");
+            jsonWrf            = getParameter(request, "json.wrf");
 
             System.err.println("parameter - zip     : [" + zip + "]");
             System.err.println("parameter - zipExt  : [" + zipExt + "]");
